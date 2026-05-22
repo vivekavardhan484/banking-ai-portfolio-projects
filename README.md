@@ -57,6 +57,21 @@ These projects helped me strengthen my understanding of:
 
 ---
 
+## Why I Built These Projects
+
+I built these projects to strengthen my practical understanding of machine learning in banking-related use cases such as fraud detection and customer retention.
+
+## Challenges Faced
+
+One challenge was understanding why accuracy alone is not enough for fraud detection. Because fraud cases are fewer than normal transactions, I focused more on recall, precision, F1-score and ROC-AUC.
+
+## Next Improvements
+
+- Add Streamlit dashboard
+- Test more models
+- Add SQL-based data extraction
+- Improve visual reporting
+
 ## Author
 
 Vivek Kothapalli
