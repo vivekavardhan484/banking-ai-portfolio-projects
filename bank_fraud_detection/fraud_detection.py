@@ -2,8 +2,6 @@
 Bank Fraud Detection System
 Author: Vivek Kothapalli
 
-This project demonstrates a complete machine learning workflow for detecting
-potentially fraudulent banking transactions.
 """
 
 import numpy as np
@@ -24,7 +22,8 @@ from sklearn.pipeline import Pipeline
 
 def create_synthetic_fraud_data(n_samples=10000, fraud_rate=0.03, random_state=42):
     """
-    Creates a synthetic fraud dataset with realistic transaction-related features.
+Generate synthetic data.
+
     """
     rng = np.random.default_rng(random_state)
 
