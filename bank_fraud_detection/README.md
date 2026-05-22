@@ -41,3 +41,19 @@ The script will:
 - Print evaluation metrics
 - Save the best model as `fraud_detection_model.pkl`
 - Save confusion matrix and ROC curve images
+
+- ## My Key Learning
+
+This project helped me understand how fraud detection is different from normal classification problems because the dataset is imbalanced. I learned that recall is very important because missing real fraud cases can be costly for a bank.
+
+## Result Interpretation
+
+Logistic Regression gave strong recall and ROC-AUC. Even though Random Forest had higher accuracy, Logistic Regression was more suitable because it detected more fraud cases.
+
+## Output Visuals
+
+### Confusion Matrix
+![Confusion Matrix](fraud_confusion_matrix.png)
+
+### ROC Curve
+![ROC Curve](fraud_roc_curve.png)
