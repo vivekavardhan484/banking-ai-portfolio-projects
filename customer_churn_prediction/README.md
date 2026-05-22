@@ -41,3 +41,19 @@ The script will:
 - Print evaluation metrics
 - Save the best model as `churn_prediction_model.pkl`
 - Save feature importance and confusion matrix images
+
+- ## My Key Learning
+
+This project helped me understand how customer behaviour data can be used to predict churn. I learned how features such as complaints, missed payments, support calls and online banking activity can influence whether a customer may leave.
+
+## Business Use Case
+
+A bank or financial service provider can use churn prediction to identify high-risk customers early and offer better support or retention offers.
+
+## Output Visuals
+
+### Confusion Matrix
+![Confusion Matrix](churn_confusion_matrix.png)
+
+### Feature Importance
+![Feature Importance](churn_feature_importance.png)
