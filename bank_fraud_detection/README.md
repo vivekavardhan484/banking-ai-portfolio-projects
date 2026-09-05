@@ -7,7 +7,17 @@ Try the deployed fraud detection app here:
 👉 [Open Bank Fraud Detection App](https://vivek-bank-fraud-detection.streamlit.app/)
 
 ## Project Overview
-This project builds a machine learning model to detect potentially fraudulent banking transactions. Fraud detection is highly relevant to financial services because it helps reduce financial losses, improve customer trust, and support risk teams with faster decision-making.
+
+This project is a machine learning-based fraud detection system that estimates the probability of a banking transaction being fraudulent.
+
+The model was trained on synthetic transaction data using features such as transaction amount, transaction time, account age, international transaction status, device changes, and failed login attempts.
+
+The deployed Streamlit app allows users to enter transaction details and receive:
+- Fraud probability
+- Low, medium, or high risk classification
+- Rule-based risk indicators explaining suspicious transaction characteristics
+
+This is a portfolio demonstration built with synthetic data and is not intended for production banking use.
 
 ## Business Problem
 Banks process thousands or millions of transactions daily. Manual fraud review is slow and expensive. This project uses transaction features to classify whether a transaction is likely to be fraudulent.
