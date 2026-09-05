@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
-model = joblib.load("fraud_detection_model.pkl")
+model = joblib.load("bank_fraud_detection/fraud_detection_model.pkl")
 
 st.set_page_config(
     page_title="Fraud Detection",
