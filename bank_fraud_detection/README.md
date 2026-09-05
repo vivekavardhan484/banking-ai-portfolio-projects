@@ -1,5 +1,11 @@
 # Bank Fraud Detection System
 
+## 🚀 Live Demo
+
+Try the deployed fraud detection app here:
+
+👉 [Open Bank Fraud Detection App](https://vivek-bank-fraud-detection.streamlit.app/)
+
 ## Project Overview
 This project builds a machine learning model to detect potentially fraudulent banking transactions. Fraud detection is highly relevant to financial services because it helps reduce financial losses, improve customer trust, and support risk teams with faster decision-making.
 
