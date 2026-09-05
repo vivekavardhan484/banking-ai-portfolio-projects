@@ -22,6 +22,7 @@ This project uses a synthetic transaction dataset generated inside the notebook/
 - Scikit-learn
 - Matplotlib
 - Joblib
+- streamlit
 
 ## ML Workflow
 1. Generate synthetic transaction data
