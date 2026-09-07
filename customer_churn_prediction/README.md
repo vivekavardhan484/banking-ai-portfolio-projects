@@ -3,6 +3,12 @@
 ## Project Overview
 This project predicts whether a customer is likely to leave a bank or financial service provider. Customer churn prediction helps businesses identify at-risk customers early and design retention strategies.
 
+## Live Demo
+
+Try the deployed Streamlit app here:
+
+https://vivek-customer-churn-prediction.streamlit.app/
+
 ## Business Problem
 Losing customers is expensive. A churn prediction model can help customer success, marketing, and relationship management teams focus on customers most likely to leave.
 
