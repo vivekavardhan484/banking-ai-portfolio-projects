@@ -22,6 +22,7 @@ This project uses a synthetic customer dataset generated inside the script. It i
 - Scikit-learn
 - Matplotlib
 - Joblib
+- streamlit
 
 ## ML Workflow
 1. Generate synthetic customer data
