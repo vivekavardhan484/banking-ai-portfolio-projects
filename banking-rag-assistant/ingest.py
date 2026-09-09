@@ -12,16 +12,19 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 
 
+# ==================================================
+# Configuration
+# ==================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+PDF_FOLDER = BASE_DIR / "data" / "pdfs"
+CHROMA_DIR = BASE_DIR / "chroma_db"
+
 load_dotenv()
 
 
-# --------------------------------------------------
-# 1. Source configuration
-# --------------------------------------------------
-
-pdf_folder = Path("data/pdfs")
-
-web_sources = [
+WEB_SOURCES = [
     {
         "url": "https://www.fca.org.uk/consumers/fraudulent-payments",
         "source_name": "FCA Fraudulent Payments",
@@ -29,25 +32,31 @@ web_sources = [
 ]
 
 
-# --------------------------------------------------
-# 2. Load PDFs
-# --------------------------------------------------
+# ==================================================
+# Load documents
+# ==================================================
 
 all_documents = []
 
-pdf_files = list(pdf_folder.glob("*.pdf"))
+pdf_files = list(PDF_FOLDER.glob("*.pdf"))
 
 print(f"Found {len(pdf_files)} PDF file(s)")
 
+
+# ==================================================
+# PDF ingestion
+# ==================================================
 
 for pdf_file in pdf_files:
 
     print(f"\nLoading PDF: {pdf_file.name}")
 
     loader = PyPDFLoader(str(pdf_file))
+
     pages = loader.load()
 
     print(f"Pages extracted: {len(pages)}")
+
 
     for i, page in enumerate(pages, start=1):
 
@@ -57,49 +66,76 @@ for pdf_file in pdf_files:
             f"Characters extracted: {len(page.page_content)}"
         )
 
+
     for page in pages:
 
         original_page = page.metadata.get(
             "page",
-            0
+            0,
         )
 
+        # Friendly source name for portfolio display
+        if pdf_file.name.lower() == "tr17-1.pdf":
+
+            source_name = (
+                "FCA TR17/1 – Customer Understanding "
+                "in Retail Banking"
+            )
+
+        else:
+
+            source_name = pdf_file.stem
+
+
         page.metadata["source_type"] = "pdf"
-        page.metadata["source_name"] = pdf_file.stem
+
+        page.metadata["source_name"] = source_name
+
         page.metadata["file"] = pdf_file.name
-        page.metadata["page_number"] = original_page + 1
+
+        page.metadata["page_number"] = (
+            original_page + 1
+        )
+
 
     all_documents.extend(pages)
 
 
-# --------------------------------------------------
-# 3. Load and clean webpages
-# --------------------------------------------------
+# ==================================================
+# Web ingestion
+# ==================================================
 
-for web_source in web_sources:
+for web_source in WEB_SOURCES:
 
     url = web_source["url"]
+
     source_name = web_source["source_name"]
 
-    print(f"\nLoading webpage: {url}")
+
+    print(
+        f"\nLoading webpage: {url}"
+    )
+
 
     response = requests.get(
         url,
         timeout=30,
         headers={
             "User-Agent": "Mozilla/5.0"
-        }
+        },
     )
 
     response.raise_for_status()
 
+
     soup = BeautifulSoup(
         response.text,
-        "html.parser"
+        "html.parser",
     )
 
 
-    # Remove unnecessary webpage elements
+    # Remove page elements that are not useful
+    # for the knowledge base
     for element in soup(
         [
             "script",
@@ -110,26 +146,21 @@ for web_source in web_sources:
             "noscript",
         ]
     ):
+
         element.decompose()
 
 
-    # Prefer the main page content
     main_content = soup.find("main")
 
     if main_content is None:
         main_content = soup
 
 
-    # Important:
-    # separator=" " prevents words from different
-    # HTML elements being joined together.
     clean_text = main_content.get_text(
         separator=" ",
-        strip=True
+        strip=True,
     )
 
-
-    # Remove excessive whitespace
     clean_text = " ".join(
         clean_text.split()
     )
@@ -137,7 +168,8 @@ for web_source in web_sources:
 
     print(
         f"{source_name} | "
-        f"Characters extracted: {len(clean_text)}"
+        f"Characters extracted: "
+        f"{len(clean_text)}"
     )
 
 
@@ -147,40 +179,46 @@ for web_source in web_sources:
             "source_type": "web",
             "source_name": source_name,
             "url": url,
-        }
+        },
     )
+
 
     all_documents.append(document)
 
 
-# --------------------------------------------------
-# 4. Check loaded documents
-# --------------------------------------------------
+# ==================================================
+# Validation
+# ==================================================
 
 if not all_documents:
 
-    print("No usable documents were loaded.")
+    print(
+        "No usable documents were loaded."
+    )
+
     raise SystemExit
 
 
 print(
-    f"\nLoaded {len(all_documents)} "
-    f"document(s) total"
+    f"\nLoaded "
+    f"{len(all_documents)} document(s) total"
 )
 
 
-# --------------------------------------------------
-# 5. Split into chunks
-# --------------------------------------------------
+# ==================================================
+# Chunking
+# ==================================================
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=700,
     chunk_overlap=120,
 )
 
+
 chunks = text_splitter.split_documents(
     all_documents
 )
+
 
 print(
     f"Created {len(chunks)} chunks"
@@ -189,44 +227,47 @@ print(
 
 for i, chunk in enumerate(
     chunks,
-    start=1
+    start=1,
 ):
 
     chunk.metadata["chunk_number"] = i
 
 
-# --------------------------------------------------
-# 6. Delete old Chroma database
-# --------------------------------------------------
+# ==================================================
+# Rebuild Chroma database
+# ==================================================
 
-db_path = Path("chroma_db")
+if CHROMA_DIR.exists():
 
-if db_path.exists():
+    print(
+        "\nRemoving old Chroma database..."
+    )
 
-    shutil.rmtree(db_path)
+    shutil.rmtree(CHROMA_DIR)
 
 
-# --------------------------------------------------
-# 7. Create embeddings
-# --------------------------------------------------
+print(
+    "Creating new embeddings..."
+)
+
 
 embeddings = OpenAIEmbeddings(
     model="text-embedding-3-small"
 )
 
 
-# --------------------------------------------------
-# 8. Store everything in ChromaDB
-# --------------------------------------------------
-
 vector_store = Chroma.from_documents(
     documents=chunks,
     embedding=embeddings,
-    persist_directory="chroma_db",
+    persist_directory=str(CHROMA_DIR),
 )
 
 
 print(
     "\nEmbeddings stored successfully "
     "in ChromaDB!"
+)
+
+print(
+    f"Database location: {CHROMA_DIR}"
 )
