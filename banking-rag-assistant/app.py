@@ -1,6 +1,6 @@
 import streamlit as st
 
-from rag_engine import ask_question
+from rag_engine import ask_question, APP_VERSION
 
 
 st.set_page_config(
@@ -10,48 +10,76 @@ st.set_page_config(
 )
 
 
+# ==================================================
+# Reset old Streamlit session after code update
+# ==================================================
+
+if st.session_state.get("app_version") != APP_VERSION:
+    st.session_state.messages = []
+    st.session_state.app_version = APP_VERSION
+
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+
+# ==================================================
+# Source display
+# ==================================================
+
 def display_sources(sources):
+
     if not sources:
         return
 
     st.markdown("### Sources")
 
     for source in sources:
+
         source_type = source.get("type")
         name = source.get("name", "Unknown source")
 
         if source_type == "pdf":
+
             page = source.get("page")
+
             st.markdown(
                 f"- **{name}** — Page {page}"
             )
 
         elif source_type == "web":
+
             url = source.get("url")
+
             st.markdown(
                 f"- [{name}]({url})"
             )
 
         else:
+
             st.markdown(
                 f"- **{name}**"
             )
 
 
+# ==================================================
+# Retrieval details
+# ==================================================
+
 def display_retrieval_details(retrieval_results):
-    if retrieval_results is None:
-        return
 
     with st.expander("🔎 View retrieval details"):
+
         if not retrieval_results:
             st.write("No documents were retrieved.")
             return
 
-        for index, item in enumerate(
+        for index, result in enumerate(
             retrieval_results,
             start=1,
         ):
-            document, score = item
+
+            document, score = result
 
             source_name = document.metadata.get(
                 "source_name",
@@ -65,7 +93,7 @@ def display_retrieval_details(retrieval_results):
             url = document.metadata.get("url")
 
             st.markdown(
-                f"**Result {index}**"
+                f"### Result {index}"
             )
 
             st.write(
@@ -77,22 +105,29 @@ def display_retrieval_details(retrieval_results):
             )
 
             if page_number:
+
                 st.write(
                     f"Page: {page_number}"
                 )
 
             if url:
+
                 st.write(
                     f"URL: {url}"
                 )
 
-            snippet = document.page_content[:500]
-
             st.write("Retrieved text:")
-            st.write(snippet)
+
+            st.write(
+                document.page_content[:700]
+            )
 
             st.divider()
 
+
+# ==================================================
+# Header
+# ==================================================
 
 st.title("🏦 AI Banking Knowledge Assistant")
 
@@ -102,25 +137,38 @@ st.caption(
 )
 
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
+# ==================================================
+# Existing conversation
+# ==================================================
 
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+
+        st.markdown(
+            message["content"]
+        )
 
         if message["role"] == "assistant":
+
             display_sources(
-                message.get("sources", [])
+                message.get(
+                    "sources",
+                    [],
+                )
             )
 
             display_retrieval_details(
                 message.get(
-                    "retrieval_results"
+                    "retrieval_results",
+                    [],
                 )
             )
 
+
+# ==================================================
+# New question
+# ==================================================
 
 question = st.chat_input(
     "Ask a banking question..."
@@ -128,6 +176,7 @@ question = st.chat_input(
 
 
 if question:
+
     st.session_state.messages.append(
         {
             "role": "user",
@@ -136,12 +185,16 @@ if question:
     )
 
     with st.chat_message("user"):
+
         st.markdown(question)
 
+
     with st.chat_message("assistant"):
+
         with st.spinner(
             "Searching banking knowledge..."
         ):
+
             result = ask_question(question)
 
         st.markdown(
@@ -156,6 +209,7 @@ if question:
             result["retrieval_results"]
         )
 
+
     st.session_state.messages.append(
         {
             "role": "assistant",
@@ -168,7 +222,12 @@ if question:
     )
 
 
+# ==================================================
+# Sidebar
+# ==================================================
+
 with st.sidebar:
+
     st.header("About")
 
     st.write(
@@ -199,6 +258,15 @@ LLM Answer
         "financial advice."
     )
 
-    if st.button("Clear conversation"):
+    st.caption(
+        f"App version: {APP_VERSION}"
+    )
+
+    if st.button(
+        "Clear conversation",
+        use_container_width=True,
+    ):
+
         st.session_state.messages = []
+
         st.rerun()
